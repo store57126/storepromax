@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>خدمة العملاء - TECHSTORE</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="header-placeholder"></div>
+
+<div class="ts-page" style="max-width:900px;">
+  <div class="ts-breadcrumb"><a href="index.html">الرئيسية</a> › <span>خدمة العملاء</span></div>
+  <div class="ts-page-title">💬 خدمة العملاء</div>
+
+  <!-- Mode Selection -->
+  <div id="modeSelect">
+    <div class="ts-chat-tabs">
+      <button class="ts-chat-tab-btn active" onclick="startChat('ai')" id="aiTabBtn">
+        <span class="tab-icon">🤖</span>
+        شات ذكي (AI)
+        <small>رد فوري على استفساراتك</small>
+      </button>
+      <button class="ts-chat-tab-btn" onclick="startChat('human')" id="humanTabBtn">
+        <span class="tab-icon">🎧</span>
+        تحدث مع موظف
+        <small>تواصل مع فريق الدعم</small>
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat Interface -->
+  <div id="chatInterface" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;">
+      <div id="chatAgentAvatar" style="width:38px;height:38px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;" id="chatAgentName">TECH AI</div>
+        <div style="font-size:12px;color:var(--green);">● متصل الآن</div>
+      </div>
+      <button class="ts-btn ts-btn-outline ts-btn-sm" onclick="resetChat()" style="margin-right:auto;">← رجوع</button>
+    </div>
+
+    <div class="ts-chat-messages" id="chatMessages" style="max-height:450px;min-height:300px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;overflow-y:auto;"></div>
+
+    <div class="ts-chat-input-wrap">
+      <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;" title="مرفق">📎</button>
+      <input type="text" class="ts-chat-input" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}">
+      <button class="ts-chat-send" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+
+<script src="js/db.js"></script>
+<script src="js/components.js"></script>
+<script>
+let chatMode = 'ai';
+let chatHistory = [];
+let isTyping = false;
+
+const systemPrompt = `أنت مساعد خدمة عملاء ذكي لمتجر TECHSTORE، أكبر متجر للإلكترونيات في مصر.
+
+معلومات المتجر:
+- نبيع: هواتف، لابتوبات، سماعات، شاشات، أجهزة لوحية، إكسسوارات
+- الضمان: سنة كاملة على جميع المنتجات ضد عيوب التصنيع
+- التوصيل: 24-48 ساعة، مجاني للطلبات فوق 500 جنيه
+- الإرجاع: 14 يوم بدون أي أسئلة
+- الدفع: عند الاستلام، بطاقة ائتمانية، محافظ رقمية
+- الدعم: متاح 24/7
+
+المنتجات الحالية المتاحة:
+${JSON.stringify(DB.getProducts().map(p => ({name: p.name, price: p.price, category: p.category, rating: p.rating, stock: p.stock})))}
+
+تعليمات:
+- رد دائماً بالعربية بشكل ودي ومهني
+- أجب على أسئلة المنتجات والطلبات والشحن والضمان
+- إذا سأل عن منتج معين، اعطه تفاصيل من قاعدة البيانات
+- اذكر الأسعار بالجنيه المصري
+- كن مختصراً ومفيداً
+- إذا طلب المستخدم التحدث مع موظف حقيقي، أخبره أنك ستحوله
+- لا تتحدث عن مواضيع خارج نطاق المتجر`;
+
+function startChat(mode) {
+  chatMode = mode;
+  document.getElementById('modeSelect').style.display = 'none';
+  document.getElementById('chatInterface').style.display = 'block';
+
+  if (mode === 'ai') {
+    document.getElementById('chatAgentAvatar').textContent = '🤖';
+    document.getElementById('chatAgentName').textContent = 'TECH AI';
+    chatHistory = [];
+    addMsg('bot', 'مرحباً بك في TECHSTORE! 👋 أنا المساعد الذكي، كيف يمكنني مساعدتك؟');
+  } else {
+    document.getElementById('chatAgentAvatar').innerHTML = '<img src="https://randomuser.me/api/portraits/men/32.jpg" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+    document.getElementById('chatAgentName').textContent = 'أحمد - موظف دعم';
+    addMsg('bot', 'مرحباً بك في TECHSTORE! 😊 كيف يمكنني مساعدتك؟', 'أحمد');
+  }
+}
+
+function resetChat() {
+  document.getElementById('modeSelect').style.display = 'block';
+  document.getElementById('chatInterface').style.display = 'none';
+  document.getElementById('chatMessages').innerHTML = '';
+  chatHistory = [];
+}
+
+function addMsg(type, text, name = null) {
+  const messages = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString('ar-EG', {hour:'2-digit',minute:'2-digit'});
+  const isUser = type === 'user';
+
+  const div = document.createElement('div');
+  div.className = `ts-msg ${isUser ? 'user' : 'bot'}`;
+  div.innerHTML = `
+    ${!isUser ? `<div class="ts-msg-avatar">${chatMode==='ai' ? '🤖' : '<img src="https://randomuser.me/api/portraits/men/32.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'}</div>` : ''}
+    <div>
+      ${!isUser && name ? `<div style="font-size:11px;color:var(--blue3);font-weight:700;margin-bottom:4px;">${name}${chatMode==='ai' ? ' <span style=\'background:var(--blue);color:white;font-size:9px;padding:1px 6px;border-radius:4px;\'>AI</span>' : ''}</div>` : ''}
+      <div class="ts-msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+      <div class="ts-msg-time">${time}</div>
+    </div>
+    ${isUser ? '<div class="ts-msg-avatar" style="background:var(--purple);">👤</div>' : ''}
+  `;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function showTyping() {
+  const messages = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'ts-msg bot';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="ts-msg-avatar">${chatMode==='ai' ? '🤖' : '<img src="https://randomuser.me/api/portraits/men/32.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'}</div>
+    <div class="ts-msg-bubble"><div class="ts-typing"><span></span><span></span><span></span></div></div>
+  `;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+async function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isTyping) return;
+
+  input.value = '';
+  addMsg('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  isTyping = true;
+  showTyping();
+
+  if (chatMode === 'ai') {
+    try {
+      // Check if user wants human agent
+      if (text.includes('موظف') || text.includes('شخص') || text.includes('بشري') || text.includes('إنسان')) {
+        await new Promise(r => setTimeout(r, 1500));
+        removeTyping();
+        addMsg('bot', 'حسناً، جاري تحويلك إلى أحد موظفي الدعم... 🔄', 'TECH AI');
+        await new Promise(r => setTimeout(r, 2000));
+        resetChat();
+        startChat('human');
+        isTyping = false;
+        return;
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: chatHistory,
+        })
+      });
+
+      const data = await response.json();
+      removeTyping();
+
+      const reply = data.content?.map(b => b.text || '').join('') || 'عذراً، لم أتمكن من الرد. حاول مرة أخرى.';
+      chatHistory.push({ role: 'assistant', content: reply });
+      addMsg('bot', reply, 'TECH AI');
+    } catch (err) {
+      removeTyping();
+      // Fallback responses
+      const fallbacks = {
+        'ضمان': 'نعم، جميع منتجاتنا أصلية 100% وتأتي مع ضمان سنة كاملة ضد عيوب التصنيع.',
+        'توصيل': 'التوصيل يتم خلال 24-48 ساعة، وهو مجاني للطلبات التي تتجاوز 500 جنيه.',
+        'إرجاع': 'يمكنك إرجاع المنتج خلال 14 يوم من تاريخ الاستلام بدون أي أسئلة.',
+        'سعر': 'أسعارنا تنافسية وتشمل ضماناً كاملاً. تصفح صفحة المنتجات لرؤية جميع الأسعار.',
+        'دفع': 'نقبل الدفع عند الاستلام، والبطاقات الائتمانية، والمحافظ الرقمية (Vodafone Cash, Orange Cash).',
+      };
+      let reply = 'أهلاً! أنا هنا لمساعدتك. هل لديك سؤال عن منتجاتنا أو طلباتك؟';
+      for (const [key, val] of Object.entries(fallbacks)) {
+        if (text.includes(key)) { reply = val; break; }
+      }
+      addMsg('bot', reply, 'TECH AI');
+    }
+  } else {
+    // Human agent simulation
+    await new Promise(r => setTimeout(r, 1500 + Math.random() * 1000));
+    removeTyping();
+    const responses = [
+      'بالتأكيد، جاري التحقق من طلبك. من فضلك انتظر لحظة...',
+      'شكراً على تواصلك معنا! سنساعدك في أقرب وقت.',
+      'تمت معالجة طلبك بنجاح. هل تحتاج لأي مساعدة أخرى؟',
+      'سيتم التواصل معك خلال 24 ساعة. شكراً لصبرك!',
+      'فريق الدعم لدينا يعمل على حل مشكلتك الآن.',
+    ];
+    addMsg('bot', responses[Math.floor(Math.random() * responses.length)], 'أحمد');
+  }
+
+  isTyping = false;
+}
+
+window.startChat = startChat;
+window.resetChat = resetChat;
+window.sendMsg = sendMsg;
+
+document.addEventListener('DOMContentLoaded', () => { initPage(); });
+</script>
+</body>
+</html>
