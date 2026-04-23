@@ -3,167 +3,611 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TECHSTORE - متجر التكنولوجيا</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>لوحة التحكم - TECHSTORE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .admin-login-page {
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background:var(--bg); position:relative; overflow:hidden;
+    }
+    .admin-login-page::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse at 20% 50%,rgba(37,99,235,0.2),transparent 50%),
+                 radial-gradient(ellipse at 80% 20%,rgba(139,92,246,0.15),transparent 50%);
+    }
+    .lightning { position:absolute; width:3px; height:200px; background:linear-gradient(to bottom,transparent,var(--blue2),transparent); filter:blur(2px); opacity:0.4; animation:flash 3s infinite; }
+    .lightning.l1 { left:10%; top:10%; transform:rotate(15deg); }
+    .lightning.l2 { right:12%; top:5%; transform:rotate(-20deg); animation-delay:1.5s; }
+    @keyframes flash { 0%,90%,100%{opacity:0} 92%{opacity:0.6} 95%{opacity:0.2} 97%{opacity:0.5} }
+    .admin-login-card {
+      background:rgba(13,27,48,0.95); border:1px solid var(--border2); border-radius:20px;
+      padding:40px; width:100%; max-width:460px; position:relative; z-index:1;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(37,99,235,0.15); backdrop-filter:blur(20px);
+    }
+  </style>
 </head>
 <body>
 
-<div id="header-placeholder"></div>
-
-<!-- BANNER -->
-<div style="max-width:1400px;margin:24px auto;padding:0 24px;" id="bannerWrap">
-  <!-- Rendered by JS -->
-</div>
-
-<!-- CATEGORIES -->
-<div class="ts-section" style="padding-top:8px;padding-bottom:8px;">
-  <div class="ts-section-title">
-    الأقسام
-    <a href="products.html">عرض الكل</a>
-  </div>
-  <div class="ts-cats" id="categoriesWrap"></div>
-</div>
-
-<!-- FEATURED PRODUCTS -->
-<div class="ts-section">
-  <div class="ts-section-title">
-    أحدث المنتجات
-    <a href="products.html">عرض المزيد</a>
-  </div>
-  <div class="ts-grid" id="productsGrid"></div>
-</div>
-
-<!-- PROMO SECTION -->
-<div style="max-width:1400px;margin:0 auto;padding:0 24px 32px;">
-  <div style="background:linear-gradient(135deg,#0A1628,#0F2044);border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-    <div>
-      <div style="font-size:28px;font-weight:900;margin-bottom:8px;">احصل على أفضل العروض!</div>
-      <div style="color:var(--text3);font-size:14px;">تسوق الآن واستمتع بتجربة لا مثيل لها مع ضمان الجودة</div>
+<!-- LOGIN -->
+<div class="admin-login-page" id="loginPage">
+  <div class="lightning l1"></div>
+  <div class="lightning l2"></div>
+  <div class="admin-login-card">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="width:64px;height:64px;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;box-shadow:0 0 20px rgba(59,130,246,0.5);">⚡</div>
+      <div style="font-size:26px;font-weight:900;"><span style="color:var(--text);">TECH</span><span style="color:var(--blue2);">STORE</span></div>
+      <div style="color:var(--text3);font-size:13px;margin-top:6px;">— لوحة التحكم - تسجيل الدخول —</div>
     </div>
-    <a href="products.html?discount=1" class="ts-btn ts-btn-primary" style="font-size:16px;padding:14px 32px;">🛍️ تسوق الآن</a>
+    <div class="ts-form-group">
+      <label>اسم المستخدم</label>
+      <div class="ts-input-wrap">
+        <input type="text" class="ts-input" id="adminUsername" placeholder="اسم المستخدم" style="padding-right:40px;" onkeydown="if(event.key==='Enter')doAdminLogin()">
+        <span style="position:absolute;top:50%;right:12px;transform:translateY(-50%);font-size:16px;color:var(--text3);">👤</span>
+      </div>
+    </div>
+    <div class="ts-form-group">
+      <label>كلمة المرور</label>
+      <div class="ts-input-wrap">
+        <input type="password" class="ts-input" id="adminPw" placeholder="كلمة المرور" style="padding-right:40px;padding-left:40px;" onkeydown="if(event.key==='Enter')doAdminLogin()">
+        <span style="position:absolute;top:50%;right:12px;transform:translateY(-50%);font-size:16px;color:var(--text3);">🔒</span>
+        <button class="ts-eye-btn" onclick="togglePw('adminPw',this)">👁️</button>
+      </div>
+    </div>
+    <button class="ts-btn ts-btn-primary ts-btn-full" style="margin-top:8px;font-size:16px;" onclick="doAdminLogin()">تسجيل الدخول ↩</button>
+    <div style="text-align:center;margin-top:16px;color:var(--text3);font-size:12px;">🛡️ لوحة تحكم آمنة ومشفرة</div>
   </div>
 </div>
 
-<div id="footer-placeholder"></div>
+<!-- DASHBOARD -->
+<div id="adminDashboard" style="display:none;">
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px 12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div style="width:34px;height:34px;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;">⚡</div>
+          <div style="font-size:18px;font-weight:900;"><span style="color:var(--text);">TECH</span><span style="color:var(--blue2);">STORE</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);padding-right:42px;" id="adminWelcome">مدير النظام</div>
+      </div>
+      <div id="adminSidebarLinks"></div>
+      <div style="padding:12px;margin-top:16px;">
+        <button class="ts-btn ts-btn-full ts-btn-sm" onclick="adminLogout()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);">🚪 تسجيل خروج</button>
+      </div>
+    </div>
+    <div class="admin-main">
+      <div class="admin-topbar">
+        <div style="font-size:18px;font-weight:800;" id="adminPageTitle">الرئيسية</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:12px;color:var(--text3);" id="adminUserBadge"></div>
+          <a href="../index.html" target="_blank" class="ts-btn ts-btn-outline ts-btn-sm">🏠 المتجر</a>
+        </div>
+      </div>
+      <div style="padding:24px;" id="adminContent"></div>
+    </div>
+  </div>
+</div>
 
-<script src="js/db.js"></script>
-<script src="js/components.js"></script>
+<script src="../js/db.js"></script>
 <script>
-const banners = [
-  { tag: 'عروض الصيف الكبرى', title: 'خصومات تصل حتى', sub: '50%', img: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400', link: 'products.html?discount=1', bg: 'rgba(37,99,235,0.3)' },
-  { tag: 'أحدث الهواتف', title: 'iPhone 15 Pro Max', sub: 'الآن متاح!', img: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400', link: 'product.html?id=1', bg: 'rgba(139,92,246,0.3)' },
-  { tag: 'عروض اللابتوبات', title: 'MacBook Air M2', sub: 'بسعر استثنائي', img: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400', link: 'products.html?cat=laptops', bg: 'rgba(6,182,212,0.3)' },
+function formatPrice(p){return p.toLocaleString('ar-EG')+' جنيه';}
+function showToast(msg,type='success'){
+  const t=document.createElement('div');t.className=`ts-toast ts-toast-${type}`;
+  t.innerHTML=`<span>${type==='success'?'✅':'❌'}</span> ${msg}`;
+  document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),10);
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3000);
+}
+function statusLabel(s){
+  const m={new:['جديد','#3B82F6'],preparing:['جاري التجهيز','#F59E0B'],shipped:['في الطريق','#8B5CF6'],delivered:['تم التوصيل','#10B981'],cancelled:['ملغي','#EF4444']};
+  return m[s]||['غير معروف','#6B7280'];
+}
+function togglePw(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁️':'🙈';}
+
+let adminSection='dashboard';
+const sections=[
+  {id:'dashboard',icon:'🏠',label:'الرئيسية'},
+  {id:'orders',icon:'🛍️',label:'الطلبات',badge:()=>(DB.get('ts_orders')||[]).filter(o=>o.status==='new').length},
+  {id:'products',icon:'📦',label:'المنتجات'},
+  {id:'categories',icon:'📂',label:'الأقسام'},
+  {id:'users',icon:'👥',label:'العملاء'},
+  {id:'coupons',icon:'🏷️',label:'كوبونات الخصم'},
+  {id:'admins',icon:'🔑',label:'المشرفون'},
+  {id:'reports',icon:'📊',label:'التقارير'},
+  {id:'settings',icon:'⚙️',label:'الإعدادات'},
 ];
-let currentBanner = 0;
 
-function renderBanner(idx) {
-  const b = banners[idx];
-  document.getElementById('bannerWrap').innerHTML = `
-  <div class="ts-banner" style="background:linear-gradient(135deg, #0A1628 0%, #0F2044 50%, #0A1628 100%);">
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%, ${b.bg}, transparent 60%);border-radius:20px;"></div>
-    <div class="ts-banner-content">
-      <div class="ts-banner-tag">${b.tag}</div>
-      <div class="ts-banner-title">${b.title}</div>
-      <div class="ts-banner-sub">${b.sub}</div>
-      <a href="${b.link}" class="ts-btn ts-btn-primary" style="font-size:16px;padding:14px 32px;">تسوق الآن ←</a>
-      <div class="ts-banner-dots">
-        ${banners.map((_, i) => `<div class="ts-banner-dot ${i===idx?'active':''}" onclick="switchBanner(${i})"></div>`).join('')}
-      </div>
+function renderSidebar(){
+  document.getElementById('adminSidebarLinks').innerHTML=sections.map(s=>{
+    const b=s.badge?s.badge():0;
+    return `<div class="admin-sidebar-link ${adminSection===s.id?'active':''}" onclick="setSection('${s.id}')">
+      <span class="asl-icon">${s.icon}</span>${s.label}
+      ${b>0?`<span class="admin-badge">${b}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+function setSection(id){
+  adminSection=id;
+  document.getElementById('adminPageTitle').textContent=sections.find(s=>s.id===id)?.label||'';
+  renderSidebar();renderSection();
+}
+
+function renderSection(){
+  const el=document.getElementById('adminContent');
+  if(adminSection==='dashboard') renderDashboard(el);
+  else if(adminSection==='orders') renderOrders(el);
+  else if(adminSection==='products') renderProducts(el);
+  else if(adminSection==='categories') renderCategories(el);
+  else if(adminSection==='users') renderUsers(el);
+  else if(adminSection==='coupons') renderCoupons(el);
+  else if(adminSection==='admins') renderAdmins(el);
+  else if(adminSection==='reports') renderReports(el);
+  else if(adminSection==='settings') renderSettings(el);
+}
+
+function renderDashboard(el){
+  const stats=DB.getStats();
+  const orders=DB.get('ts_orders')||[];
+  const products=DB.get('ts_products')||[];
+  const productSales={};
+  orders.forEach(o=>o.items?.forEach(i=>{productSales[i.productId]=(productSales[i.productId]||0)+i.qty;}));
+  const topProducts=products.sort((a,b)=>(productSales[b.id]||0)-(productSales[a.id]||0)).slice(0,4);
+  const lowStock=products.filter(p=>p.stock<=5&&p.stock>0);
+
+  el.innerHTML=`
+  <div class="admin-grid-4" style="margin-bottom:24px;">
+    ${[
+      {label:'المنتجات',val:stats.products,icon:'📦',color:'var(--blue3)',change:'+8 منتج جديد'},
+      {label:'العملاء',val:stats.users,icon:'👥',color:'var(--green)',change:'+5 عميل جديد'},
+      {label:'الطلبات',val:stats.orders,icon:'🛍️',color:'var(--gold)',change:`${orders.filter(o=>o.status==='new').length} جديد`},
+      {label:'المبيعات',val:formatPrice(stats.revenue),icon:'💰',color:'var(--purple)',change:'+12% عن الشهر الماضي'},
+    ].map(s=>`
+    <div class="ts-stat-card">
+      <div class="ts-stat-icon">${s.icon}</div>
+      <div class="ts-stat-label">${s.label}</div>
+      <div class="ts-stat-value" style="color:${s.color};font-size:${String(s.val).length>8?'16':'26'}px;">${s.val}</div>
+      <div class="ts-stat-change">${s.change}</div>
+    </div>`).join('')}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div class="ts-table-wrap">
+      <div class="ts-table-head"><h3>آخر الطلبات</h3><button class="ts-btn ts-btn-outline ts-btn-sm" onclick="setSection('orders')">عرض الكل</button></div>
+      <table class="admin-table">
+        <tr><th>#</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th></tr>
+        ${orders.slice(-5).reverse().map(o=>{const[lb]=statusLabel(o.status);return`<tr>
+          <td style="font-weight:700;">#${String(o.id).slice(-4)}</td>
+          <td>${o.userName||o.shipping?.fullName||'غير معروف'}</td>
+          <td style="color:var(--blue3);font-weight:700;">${formatPrice(o.total)}</td>
+          <td><span class="ts-status ts-status-${o.status}">${lb}</span></td>
+        </tr>`;}).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">لا توجد طلبات</td></tr>'}
+      </table>
     </div>
-    <div class="ts-banner-img">
-      <img src="${b.img}" alt="banner" onerror="this.style.display='none'">
-    </div>
-    <div class="ts-banner-arrows">
-      <div class="ts-banner-arrow" onclick="switchBanner(${(idx+1)%banners.length})">←</div>
-      <div class="ts-banner-arrow" onclick="switchBanner(${(idx-1+banners.length)%banners.length})">→</div>
+    <div class="ts-table-wrap">
+      <div class="ts-table-head"><h3>تنبيهات المخزون</h3></div>
+      ${lowStock.length?`<table class="admin-table"><tr><th>المنتج</th><th>المتبقي</th></tr>
+        ${lowStock.map(p=>`<tr><td>${p.name}</td><td style="color:${p.stock<=2?'var(--red)':'var(--gold)'};font-weight:700;">⚠️ ${p.stock} قطع</td></tr>`).join('')}
+      </table>`:'<div style="padding:24px;text-align:center;color:var(--green);">✅ المخزون بخير</div>'}
     </div>
   </div>
-  `;
+
+  <div class="ts-table-wrap">
+    <div class="ts-table-head"><h3>المنتجات الأكثر مبيعاً</h3><button class="ts-btn ts-btn-outline ts-btn-sm" onclick="setSection('products')">إدارة المنتجات</button></div>
+    <table class="admin-table">
+      <tr><th>#</th><th>المنتج</th><th>المبيعات</th><th>المخزون</th><th>السعر</th></tr>
+      ${topProducts.map((p,i)=>`<tr>
+        <td><div style="width:24px;height:24px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${i+1}</div></td>
+        <td><div style="display:flex;align-items:center;gap:8px;"><img src="${p.images[0]}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;" onerror="this.src='https://placehold.co/36x36/0D1B30/60A5FA?text=📦'"><span style="font-size:13px;font-weight:600;">${p.name}</span></div></td>
+        <td>${productSales[p.id]||0} قطعة</td>
+        <td style="color:${p.stock<=5?'var(--red)':'var(--green)'};">${p.stock}</td>
+        <td style="color:var(--blue3);font-weight:700;">${formatPrice(p.price)}</td>
+      </tr>`).join('')}
+    </table>
+  </div>`;
 }
 
-function switchBanner(idx) {
-  currentBanner = idx;
-  renderBanner(idx);
+function renderOrders(el){
+  const orders=(DB.get('ts_orders')||[]).slice().reverse();
+  el.innerHTML=`
+  <div class="ts-table-wrap">
+    <div class="ts-table-head"><h3>الطلبات (${orders.length})</h3></div>
+    <div style="overflow-x:auto;">
+    <table class="admin-table">
+      <tr><th>#</th><th>العميل</th><th>المنتجات</th><th>الإجمالي</th><th>طريقة الدفع</th><th>التاريخ</th><th>الحالة</th><th>تحديث الحالة</th></tr>
+      ${orders.length?orders.map(o=>{const[lb]=statusLabel(o.status);return`<tr>
+        <td style="font-weight:700;">#${String(o.id).slice(-6)}</td>
+        <td><div style="font-weight:600;">${o.userName||o.shipping?.fullName||'غير معروف'}</div><div style="font-size:11px;color:var(--text3);">${o.shipping?.phone||''}</div></td>
+        <td><div style="display:flex;gap:4px;">${(o.items||[]).slice(0,2).map(i=>`<img src="${i.img||''}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;" onerror="this.src='https://placehold.co/32x32/0D1B30/60A5FA?text=📦'">`).join('')}${o.items?.length>2?`<span style="font-size:11px;color:var(--text3);">+${o.items.length-2}</span>`:''}</div></td>
+        <td style="color:var(--blue3);font-weight:700;">${formatPrice(o.total)}</td>
+        <td style="font-size:12px;">${o.paymentMethod==='cod'?'💵 عند الاستلام':o.paymentMethod==='card'?'💳 بطاقة':'📱 محفظة'}</td>
+        <td style="font-size:12px;color:var(--text3);">${new Date(o.date).toLocaleDateString('ar-EG')}</td>
+        <td><span class="ts-status ts-status-${o.status}">${lb}</span></td>
+        <td>
+          <select style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:12px;font-family:Cairo,sans-serif;cursor:pointer;" onchange="updateOrder(${o.id},this.value);this.value=''">
+            <option value="">-- تغيير --</option>
+            <option value="new">جديد</option>
+            <option value="preparing">جاري التجهيز</option>
+            <option value="shipped">في الطريق</option>
+            <option value="delivered">تم التوصيل</option>
+            <option value="cancelled">إلغاء</option>
+          </select>
+        </td>
+      </tr>`;}).join(''):'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">لا توجد طلبات</td></tr>'}
+    </table></div>
+  </div>`;
 }
 
-setInterval(() => { currentBanner = (currentBanner + 1) % banners.length; renderBanner(currentBanner); }, 5000);
-
-function renderCategories() {
-  const cats = DB.get('ts_categories') || [];
-  document.getElementById('categoriesWrap').innerHTML = cats.map(c => `
-    <a href="products.html?cat=${c.id}" class="ts-cat-btn">
-      <span class="cat-icon">${c.icon}</span>
-      ${c.name}
-    </a>
-  `).join('') + `<a href="products.html" class="ts-cat-btn"><span class="cat-icon">⋯</span>المزيد</a>`;
+function updateOrder(id,status){
+  if(!status)return;
+  DB.updateOrderStatus(id,status);
+  const[lb]=statusLabel(status);
+  showToast(`تم تحديث الطلب إلى: ${lb}`);
+  renderSection();
 }
 
-function renderProducts() {
-  const products = DB.getProducts().slice(0, 8);
-  document.getElementById('productsGrid').innerHTML = products.map(p => renderProductCard(p)).join('');
-}
-
-function renderProductCard(p) {
-  const wished = DB.isWishlisted(p.id);
-  const discount = p.discount ? `<div class="ts-discount-badge">${p.discount}% خصم</div>` :
-    (p.stock <= 5 ? `<div class="ts-new-badge">جديد</div>` : `<div class="ts-new-badge">جديد</div>`);
-  const lowStock = p.stock <= 5 && p.stock > 0 ? `<div class="ts-stock-badge">متبقي ${p.stock}</div>` : '';
-
-  return `
-  <div class="ts-product-card">
-    <div class="ts-product-img">
-      <a href="product.html?id=${p.id}"><img src="${p.images[0]}" alt="${p.name}" onerror="this.src='https://placehold.co/300x220/0D1B30/60A5FA?text=📦'"></a>
-      ${discount}
-      ${lowStock}
-      <div class="ts-wish-btn ${wished?'active':''}" onclick="toggleWish(${p.id}, this)">
-        ${wished ? '❤️' : '🤍'}
+let uploadedImgs=[];
+function renderProducts(el){
+  const products=DB.get('ts_products')||[];
+  const cats=DB.get('ts_categories')||[];
+  el.innerHTML=`
+  <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+    <div></div>
+    <button class="ts-btn ts-btn-primary" onclick="showProductForm()">+ إضافة منتج جديد</button>
+  </div>
+  <div id="productFormWrap" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+    <h3 style="margin-bottom:16px;font-size:16px;font-weight:800;" id="productFormTitle">إضافة منتج جديد</h3>
+    <input type="hidden" id="editProductId">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="ts-form-group"><label>اسم المنتج *</label><input type="text" class="ts-input" id="pName" placeholder="اسم المنتج"></div>
+      <div class="ts-form-group"><label>القسم *</label><select class="ts-input" id="pCat">${cats.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}</select></div>
+      <div class="ts-form-group"><label>السعر الأساسي *</label><input type="number" class="ts-input" id="pPrice" placeholder="0"></div>
+      <div class="ts-form-group"><label>السعر القبل الخصم</label><input type="number" class="ts-input" id="pOldPrice" placeholder="اتركه فارغاً إن لم يكن"></div>
+      <div class="ts-form-group"><label>نسبة الخصم %</label><input type="number" class="ts-input" id="pDiscount" placeholder="0" min="0" max="100"></div>
+      <div class="ts-form-group"><label>المخزون *</label><input type="number" class="ts-input" id="pStock" placeholder="0"></div>
+    </div>
+    <div class="ts-form-group"><label>وصف المنتج</label><textarea class="ts-input" id="pDesc" placeholder="وصف تفصيلي للمنتج" rows="3"></textarea></div>
+    <div class="ts-form-group">
+      <label>صور المنتج (رفع من الجهاز)</label>
+      <input type="file" id="pImgFile" accept="image/*" multiple style="color:var(--text);margin-bottom:6px;" onchange="handleImgUpload(this)">
+      <input type="text" class="ts-input" id="pImgUrl" placeholder="أو أدخل رابط URL للصورة" style="margin-top:4px;">
+      <div id="imgPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="ts-form-group">
+        <label>الألوان (اسم:كود:سعر_إضافي، مفصولة بفاصلة)</label>
+        <input type="text" class="ts-input" id="pColors" placeholder="أسود:#1C1C1E:0, ذهبي:#D4AF37:500">
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">إذا كان سعر اللون مختلف، ضع السعر الإضافي بعد الكود. السعر الأساسي هو الأرخص.</div>
+      </div>
+      <div class="ts-form-group">
+        <label>خيارات السعة (حجم:سعر_إضافي)</label>
+        <input type="text" class="ts-input" id="pStorage" placeholder="128GB:0, 256GB:3000, 512GB:6000">
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">السعر الإضافي يُضاف فوق السعر الأساسي لكل خيار.</div>
       </div>
     </div>
-    <div class="ts-product-body">
-      <a href="product.html?id=${p.id}" style="text-decoration:none;color:inherit">
-        <div class="ts-product-name">${p.name}</div>
-      </a>
-      <div class="ts-product-rating">
-        <span class="ts-stars">${renderStars(p.rating)}</span>
-        <span class="ts-rating-count">(${p.reviews})</span>
-      </div>
-      <div class="ts-product-price">
-        <span class="ts-price">${formatPrice(p.price)}</span>
-        ${p.oldPrice ? `<span class="ts-old-price">${formatPrice(p.oldPrice)}</span>` : ''}
-      </div>
-      <button class="ts-btn ts-btn-primary ts-btn-full ts-btn-sm" onclick="quickAdd(${p.id})">
-        🛒 أضف للسلة
-      </button>
+    <div class="ts-form-group" style="display:flex;align-items:center;gap:8px;">
+      <input type="checkbox" id="pFeatured" style="width:18px;height:18px;cursor:pointer;">
+      <label for="pFeatured" style="cursor:pointer;">منتج مميز (يظهر في الصفحة الرئيسية)</label>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="ts-btn ts-btn-outline" onclick="hideProductForm()">إلغاء</button>
+      <button class="ts-btn ts-btn-primary" onclick="saveProduct()">💾 حفظ المنتج</button>
     </div>
   </div>
-  `;
+
+  <div class="ts-table-wrap">
+    <div class="ts-table-head"><h3>المنتجات (${products.length})</h3></div>
+    <div style="overflow-x:auto;">
+    <table class="admin-table">
+      <tr><th>المنتج</th><th>القسم</th><th>السعر</th><th>المخزون</th><th>التقييم</th><th>مميز</th><th>إجراءات</th></tr>
+      ${products.map(p=>{
+        const cat=cats.find(c=>c.id===p.category);
+        return`<tr>
+          <td><div style="display:flex;align-items:center;gap:8px;"><img src="${p.images[0]}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" onerror="this.src='https://placehold.co/40x40/0D1B30/60A5FA?text=📦'"><div><div style="font-weight:600;font-size:13px;">${p.name}</div></div></div></td>
+          <td>${cat?.icon||''} ${cat?.name||p.category}</td>
+          <td style="color:var(--blue3);font-weight:700;">${formatPrice(p.price)}</td>
+          <td style="color:${p.stock<=5?'var(--red)':'var(--green)'};font-weight:700;">${p.stock}</td>
+          <td style="color:var(--gold);">★ ${p.rating}</td>
+          <td>${p.featured?'⭐':'—'}</td>
+          <td><div style="display:flex;gap:6px;"><button class="ts-btn ts-btn-outline ts-btn-sm" onclick="editProduct(${p.id})">✏️</button><button class="ts-btn ts-btn-danger ts-btn-sm" onclick="deleteProduct(${p.id})">🗑️</button></div></td>
+        </tr>`;
+      }).join('')}
+    </table></div>
+  </div>`;
 }
 
-function toggleWish(id, el) {
-  const added = DB.toggleWishlist(id);
-  el.innerHTML = added ? '❤️' : '🤍';
-  el.classList.toggle('active', added);
-  // Update badge
-  const wishCount = DB.getWishlist().length;
-  document.querySelectorAll('.wish-count').forEach(b => { b.textContent = wishCount; b.style.display = wishCount > 0 ? 'flex' : 'none'; });
-  showToast(added ? 'تمت الإضافة للمفضلة ❤️' : 'تمت الإزالة من المفضلة');
+function handleImgUpload(input){
+  Array.from(input.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{uploadedImgs.push(e.target.result);updateImgPreview();};
+    r.readAsDataURL(f);
+  });
+}
+function updateImgPreview(){
+  const p=document.getElementById('imgPreview');if(!p)return;
+  p.innerHTML=uploadedImgs.map((img,i)=>`<div style="position:relative;"><img src="${img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"><button onclick="uploadedImgs.splice(${i},1);updateImgPreview()" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:10px;">✕</button></div>`).join('');
+}
+function showProductForm(product=null){
+  uploadedImgs=[];
+  document.getElementById('productFormWrap').style.display='block';
+  document.getElementById('productFormTitle').textContent=product?'تعديل المنتج':'إضافة منتج جديد';
+  document.getElementById('editProductId').value=product?.id||'';
+  document.getElementById('pName').value=product?.name||'';
+  document.getElementById('pCat').value=product?.category||'';
+  document.getElementById('pPrice').value=product?.price||'';
+  document.getElementById('pOldPrice').value=product?.oldPrice||'';
+  document.getElementById('pDiscount').value=product?.discount||'0';
+  document.getElementById('pStock').value=product?.stock||'';
+  document.getElementById('pDesc').value=product?.description||'';
+  document.getElementById('pFeatured').checked=product?.featured||false;
+  document.getElementById('pColors').value=product?.colors?.map(c=>`${c.name}:${c.hex}:${c.price||0}`).join(', ')||'';
+  document.getElementById('pStorage').value=product?.storage?.map(s=>`${s.size}:${s.price||0}`).join(', ')||'';
+  if(product?.images){uploadedImgs=[...product.images];updateImgPreview();}
+  document.getElementById('productFormWrap').scrollIntoView({behavior:'smooth'});
+}
+function hideProductForm(){document.getElementById('productFormWrap').style.display='none';uploadedImgs=[];}
+function parseColors(str){
+  if(!str.trim())return[];
+  return str.split(',').map(s=>{const p=s.trim().split(':');return{name:p[0]?.trim()||'',hex:p[1]?.trim()||'#FFFFFF',price:parseInt(p[2])||0};}).filter(c=>c.name);
+}
+function parseStorage(str){
+  if(!str.trim())return[];
+  return str.split(',').map(s=>{const p=s.trim().split(':');return{size:p[0]?.trim()||'',price:parseInt(p[1])||0};}).filter(s=>s.size);
+}
+function saveProduct(){
+  const id=document.getElementById('editProductId').value;
+  const urlImg=document.getElementById('pImgUrl').value.trim();
+  let images=[...uploadedImgs];
+  if(urlImg)images.push(urlImg);
+  if(!images.length)images=['https://placehold.co/400x300/0D1B30/60A5FA?text=📦'];
+  const product={
+    ...(id?DB.getProduct(id):{}),id:id||null,
+    name:document.getElementById('pName').value.trim(),
+    category:document.getElementById('pCat').value,
+    price:parseInt(document.getElementById('pPrice').value)||0,
+    oldPrice:parseInt(document.getElementById('pOldPrice').value)||null,
+    discount:parseInt(document.getElementById('pDiscount').value)||0,
+    stock:parseInt(document.getElementById('pStock').value)||0,
+    description:document.getElementById('pDesc').value.trim(),
+    featured:document.getElementById('pFeatured').checked,
+    colors:parseColors(document.getElementById('pColors').value),
+    storage:parseStorage(document.getElementById('pStorage').value),
+    images,
+    rating:id?DB.getProduct(id)?.rating||0:0,
+    reviews:id?DB.getProduct(id)?.reviews||0:0,
+  };
+  if(!product.name||!product.price){showToast('يرجى ملء الاسم والسعر','error');return;}
+  DB.saveProduct(product);
+  showToast(id?'تم تعديل المنتج ✅':'تم إضافة المنتج ✅');
+  hideProductForm();renderSection();
+}
+function editProduct(id){showProductForm(DB.getProduct(id));}
+function deleteProduct(id){
+  if(!confirm('هل أنت متأكد من حذف هذا المنتج؟'))return;
+  DB.deleteProduct(id);showToast('تم حذف المنتج');renderSection();
 }
 
-function quickAdd(id) {
-  DB.addToCart(id);
-  showToast('تمت الإضافة للسلة 🛒');
-  openCart();
+function renderCategories(el){
+  const cats=DB.get('ts_categories')||[];
+  el.innerHTML=`
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+    <h3 style="margin-bottom:16px;font-size:16px;font-weight:800;">إضافة قسم جديد</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
+      <div class="ts-form-group" style="margin:0"><label>اسم القسم</label><input type="text" class="ts-input" id="catName" placeholder="مثال: هواتف"></div>
+      <div class="ts-form-group" style="margin:0"><label>الأيقونة (إيموجي)</label><input type="text" class="ts-input" id="catIcon" placeholder="مثال: 📱"></div>
+      <button class="ts-btn ts-btn-primary" onclick="addCategory()">+ إضافة</button>
+    </div>
+  </div>
+  <div class="ts-table-wrap">
+    <div class="ts-table-head"><h3>الأقسام (${cats.length})</h3></div>
+    <table class="admin-table">
+      <tr><th>الأيقونة</th><th>الاسم</th><th>المعرف</th><th>عدد المنتجات</th><th>حذف</th></tr>
+      ${cats.map(c=>{const count=(DB.get('ts_products')||[]).filter(p=>p.category===c.id).length;return`<tr>
+        <td style="font-size:24px;">${c.icon}</td><td style="font-weight:700;">${c.name}</td>
+        <td style="color:var(--text3);font-size:12px;">${c.id}</td><td>${count} منتج</td>
+        <td><button class="ts-btn ts-btn-danger ts-btn-sm" onclick="deleteCat('${c.id}')">🗑️</button></td>
+      </tr>`;}).join('')}
+    </table>
+  </div>`;
+}
+function addCategory(){
+  const name=document.getElementById('catName').value.trim();
+  const icon=document.getElementById('catIcon').value.trim();
+  if(!name||!icon){showToast('يرجى إدخال الاسم والأيقونة','error');return;}
+  const id=name.toLowerCase().replace(/\s+/g,'_').replace(/[^\w]/g,'');
+  const cats=DB.get('ts_categories')||[];
+  cats.push({id,name,icon});DB.set('ts_categories',cats);
+  showToast('تم إضافة القسم ✅');renderSection();
+}
+function deleteCat(id){
+  if(!confirm('هل أنت متأكد؟'))return;
+  DB.set('ts_categories',(DB.get('ts_categories')||[]).filter(c=>c.id!==id));
+  showToast('تم حذف القسم');renderSection();
 }
 
-window.toggleWish = toggleWish;
-window.quickAdd = quickAdd;
-window.switchBanner = switchBanner;
+function renderUsers(el){
+  const users=DB.get('ts_users')||[];
+  el.innerHTML=`<div class="ts-table-wrap">
+    <div class="ts-table-head"><h3>العملاء (${users.length})</h3></div>
+    ${users.length?`<table class="admin-table">
+      <tr><th>الاسم</th><th>البريد الإلكتروني</th><th>الهاتف</th><th>تاريخ التسجيل</th><th>الطلبات</th></tr>
+      ${users.map(u=>`<tr>
+        <td style="font-weight:600;">${u.name}</td>
+        <td style="color:var(--text3);font-size:12px;">${u.email}</td>
+        <td style="color:var(--text3);font-size:12px;">${u.phone||'-'}</td>
+        <td style="font-size:12px;color:var(--text3);">${new Date(u.joinDate).toLocaleDateString('ar-EG')}</td>
+        <td>${(u.orders||[]).length}</td>
+      </tr>`).join('')}
+    </table>`:'<div style="padding:30px;text-align:center;color:var(--text3)">لا يوجد عملاء مسجلين بعد</div>'}
+  </div>`;
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-  initPage();
-  renderBanner(0);
-  renderCategories();
-  renderProducts();
+function renderCoupons(el){
+  const coupons=DB.get('ts_coupons')||[];
+  el.innerHTML=`
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+    <h3 style="margin-bottom:16px;font-size:16px;font-weight:800;">إضافة كوبون جديد</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;">
+      <div class="ts-form-group" style="margin:0"><label>كود الخصم</label><input type="text" class="ts-input" id="couponCode" placeholder="مثال: SAVE50" style="text-transform:uppercase"></div>
+      <div class="ts-form-group" style="margin:0"><label>نوع الخصم</label><select class="ts-input" id="couponType"><option value="percent">نسبة مئوية %</option><option value="fixed">مبلغ ثابت (جنيه)</option></select></div>
+      <div class="ts-form-group" style="margin:0"><label>القيمة</label><input type="number" class="ts-input" id="couponVal" placeholder="20"></div>
+      <button class="ts-btn ts-btn-primary" onclick="addCoupon()">+ إضافة</button>
+    </div>
+  </div>
+  <div class="ts-table-wrap">
+    <div class="ts-table-head"><h3>الكوبونات (${coupons.length})</h3></div>
+    <table class="admin-table">
+      <tr><th>الكود</th><th>النوع</th><th>القيمة</th><th>الحالة</th><th>إجراءات</th></tr>
+      ${coupons.map((c,i)=>`<tr>
+        <td style="font-weight:800;font-family:monospace;color:var(--blue3);">${c.code}</td>
+        <td>${c.type==='percent'?'نسبة مئوية':'مبلغ ثابت'}</td>
+        <td>${c.type==='percent'?c.discount+'%':formatPrice(c.discount)}</td>
+        <td><span style="color:${c.active?'var(--green)':'var(--red)'};">${c.active?'✅ فعّال':'❌ معطل'}</span></td>
+        <td><div style="display:flex;gap:6px;">
+          <button class="ts-btn ts-btn-outline ts-btn-sm" onclick="toggleCoupon(${i})">${c.active?'تعطيل':'تفعيل'}</button>
+          <button class="ts-btn ts-btn-danger ts-btn-sm" onclick="deleteCoupon(${i})">🗑️</button>
+        </div></td>
+      </tr>`).join('')}
+    </table>
+  </div>`;
+}
+function addCoupon(){
+  const code=document.getElementById('couponCode').value.trim().toUpperCase();
+  const type=document.getElementById('couponType').value;
+  const val=parseInt(document.getElementById('couponVal').value)||0;
+  if(!code||!val){showToast('يرجى ملء جميع الحقول','error');return;}
+  const coupons=DB.get('ts_coupons')||[];
+  coupons.push({code,type,discount:val,active:true});
+  DB.set('ts_coupons',coupons);showToast('تم إضافة الكوبون ✅');renderSection();
+}
+function toggleCoupon(i){const c=DB.get('ts_coupons')||[];c[i].active=!c[i].active;DB.set('ts_coupons',c);renderSection();}
+function deleteCoupon(i){const c=DB.get('ts_coupons')||[];c.splice(i,1);DB.set('ts_coupons',c);showToast('تم الحذف');renderSection();}
+
+function renderAdmins(el){
+  const admins=DB.getAdmins();
+  el.innerHTML=`
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+    <h3 style="margin-bottom:16px;font-size:16px;font-weight:800;">إضافة مشرف جديد</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;">
+      <div class="ts-form-group" style="margin:0"><label>اسم المستخدم</label><input type="text" class="ts-input" id="newAdminUser" placeholder="username"></div>
+      <div class="ts-form-group" style="margin:0"><label>الاسم الكامل</label><input type="text" class="ts-input" id="newAdminName" placeholder="الاسم"></div>
+      <div class="ts-form-group" style="margin:0"><label>كلمة المرور</label><input type="password" class="ts-input" id="newAdminPw" placeholder="كلمة المرور"></div>
+      <button class="ts-btn ts-btn-primary" onclick="addAdmin()">+ إضافة</button>
+    </div>
+  </div>
+  <div class="ts-table-wrap">
+    <div class="ts-table-head"><h3>المشرفون (${admins.length})</h3></div>
+    <table class="admin-table">
+      <tr><th>الاسم</th><th>اسم المستخدم</th><th>الصلاحية</th><th>حذف</th></tr>
+      ${admins.map(a=>`<tr>
+        <td style="font-weight:700;">${a.name}</td>
+        <td style="color:var(--blue3);">@${a.username}</td>
+        <td><span style="color:${a.role==='super'?'var(--gold)':'var(--text2)'};">${a.role==='super'?'👑 رئيسي':'🔧 مشرف'}</span></td>
+        <td>${a.username!=='loay'?`<button class="ts-btn ts-btn-danger ts-btn-sm" onclick="removeAdmin('${a.username}')">🗑️</button>`:'<span style="color:var(--text3);font-size:11px;">محمي</span>'}</td>
+      </tr>`).join('')}
+    </table>
+  </div>`;
+}
+function addAdmin(){
+  const u=document.getElementById('newAdminUser').value.trim();
+  const n=document.getElementById('newAdminName').value.trim();
+  const p=document.getElementById('newAdminPw').value;
+  if(!u||!n||!p){showToast('يرجى ملء جميع الحقول','error');return;}
+  DB.saveAdmin({username:u,name:n,password:p,role:'admin'});
+  showToast('تم إضافة المشرف ✅');renderSection();
+}
+function removeAdmin(username){
+  if(!confirm('هل أنت متأكد؟'))return;
+  if(!DB.deleteAdmin(username)){showToast('لا يمكن حذف المشرف الرئيسي','error');return;}
+  showToast('تم حذف المشرف');renderSection();
+}
+
+function renderReports(el){
+  const orders=DB.get('ts_orders')||[];
+  const products=DB.get('ts_products')||[];
+  const revenue=orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
+  const catRevenue={};
+  orders.forEach(o=>o.items?.forEach(i=>{const p=DB.getProduct(i.productId);if(p)catRevenue[p.category]=(catRevenue[p.category]||0)+i.price*i.qty;}));
+  const cats=DB.get('ts_categories')||[];
+  const totalR=Object.values(catRevenue).reduce((s,v)=>s+v,0)||1;
+  el.innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="ts-table-wrap" style="padding:20px;">
+      <h3 style="margin-bottom:16px;font-weight:800;">توزيع المبيعات حسب القسم</h3>
+      <div style="text-align:center;margin-bottom:16px;"><div style="font-size:28px;font-weight:900;color:var(--blue3);">${formatPrice(revenue)}</div><div style="font-size:12px;color:var(--text3);">إجمالي المبيعات</div></div>
+      ${Object.entries(catRevenue).map(([cid,rev])=>{const cat=cats.find(c=>c.id===cid);const pct=Math.round(rev/totalR*100);return`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>${cat?.icon||''} ${cat?.name||cid}</span><span style="font-weight:700;color:var(--blue3);">${pct}%</span></div><div style="height:8px;background:var(--bg3);border-radius:4px;"><div style="width:${pct}%;height:100%;background:var(--blue2);border-radius:4px;"></div></div></div>`;}).join('')||'<div style="color:var(--text3);text-align:center;padding:20px;">لا توجد بيانات بعد</div>'}
+    </div>
+    <div class="ts-table-wrap" style="padding:20px;">
+      <h3 style="margin-bottom:16px;font-weight:800;">إحصائيات عامة</h3>
+      ${[
+        {label:'إجمالي الطلبات',val:orders.length,icon:'🛍️'},
+        {label:'الطلبات المكتملة',val:orders.filter(o=>o.status==='delivered').length,icon:'✅'},
+        {label:'قيد التنفيذ',val:orders.filter(o=>['new','preparing','shipped'].includes(o.status)).length,icon:'🚚'},
+        {label:'الطلبات الملغية',val:orders.filter(o=>o.status==='cancelled').length,icon:'❌'},
+        {label:'إجمالي المنتجات',val:products.length,icon:'📦'},
+        {label:'نفد مخزونها',val:products.filter(p=>p.stock===0).length,icon:'⚠️'},
+        {label:'إجمالي العملاء',val:(DB.get('ts_users')||[]).length,icon:'👥'},
+        {label:'إجمالي الإيرادات',val:formatPrice(revenue),icon:'💰'},
+      ].map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text3);font-size:13px;">${s.icon} ${s.label}</span><span style="font-weight:800;color:var(--blue3);">${s.val}</span></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderSettings(el){
+  el.innerHTML=`
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:600px;">
+    <h3 style="font-size:18px;font-weight:800;margin-bottom:20px;">⚙️ إعدادات النظام</h3>
+    <div class="ts-form-group"><label>اسم المتجر</label><input type="text" class="ts-input" value="TECHSTORE"></div>
+    <div class="ts-form-group"><label>وصف المتجر</label><textarea class="ts-input">متجر التكنولوجيا رقم 1 في مصر</textarea></div>
+    <div class="ts-form-group"><label>حد الشحن المجاني (جنيه)</label><input type="number" class="ts-input" value="500"></div>
+    <div class="ts-form-group"><label>تكلفة الشحن الافتراضي (جنيه)</label><input type="number" class="ts-input" value="60"></div>
+    <button class="ts-btn ts-btn-primary" onclick="showToast('تم حفظ الإعدادات ✅')">💾 حفظ الإعدادات</button>
+    <hr style="border-color:var(--border);margin:24px 0;">
+    <h4 style="color:var(--red);margin-bottom:12px;">⚠️ منطقة الخطر</h4>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="ts-btn ts-btn-danger ts-btn-sm" onclick="if(confirm('هل أنت متأكد؟')){DB.set('ts_orders',[]);showToast('تم مسح الطلبات');renderSection();}">🗑️ مسح جميع الطلبات</button>
+      <button class="ts-btn ts-btn-sm" style="background:rgba(245,158,11,0.2);border:1px solid var(--gold);color:var(--gold);" onclick="if(confirm('هل أنت متأكد؟ سيتم حذف جميع بيانات المستخدمين!')){DB.set('ts_users',[]);DB.logout();showToast('تم المسح');}">🗑️ مسح بيانات العملاء</button>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--text3);">
+      نسخة النظام: v1.0.0 | TECHSTORE Admin Panel | جميع الحقوق محفوظة لـ LOAY
+    </div>
+  </div>`;
+}
+
+function doAdminLogin(){
+  const u=document.getElementById('adminUsername').value.trim();
+  const p=document.getElementById('adminPw').value;
+  if(!u||!p){showToast('يرجى إدخال البيانات','error');return;}
+  const admin=DB.adminLogin(u,p);
+  if(!admin){showToast('اسم المستخدم أو كلمة المرور خاطئة','error');return;}
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('adminDashboard').style.display='block';
+  document.getElementById('adminWelcome').textContent=admin.name;
+  document.getElementById('adminUserBadge').textContent='👤 '+admin.name;
+  renderSidebar();setSection('dashboard');
+}
+function adminLogout(){
+  DB.adminLogout();
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('adminDashboard').style.display='none';
+}
+
+window.doAdminLogin=doAdminLogin; window.adminLogout=adminLogout;
+window.setSection=setSection; window.updateOrder=updateOrder;
+window.showProductForm=showProductForm; window.hideProductForm=hideProductForm;
+window.saveProduct=saveProduct; window.editProduct=editProduct; window.deleteProduct=deleteProduct;
+window.handleImgUpload=handleImgUpload; window.updateImgPreview=updateImgPreview;
+window.addCategory=addCategory; window.deleteCat=deleteCat;
+window.addCoupon=addCoupon; window.toggleCoupon=toggleCoupon; window.deleteCoupon=deleteCoupon;
+window.addAdmin=addAdmin; window.removeAdmin=removeAdmin; window.togglePw=togglePw;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const admin=DB.getAdminUser();
+  if(admin){
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('adminDashboard').style.display='block';
+    document.getElementById('adminWelcome').textContent=admin.name;
+    document.getElementById('adminUserBadge').textContent='👤 '+admin.name;
+    renderSidebar();setSection('dashboard');
+  }
 });
 </script>
 </body>
